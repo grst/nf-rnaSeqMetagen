@@ -421,7 +421,7 @@ switch (mode) {
         process run_KrakenClassifyReads {
             label 'maxi'
             tag { sample }
-            // publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
+            publishDir "$out_dir/${sample}", mode: 'copy', overwrite: true
 
             input:
             set sample, file(reads) from unmapped_kraken
@@ -430,14 +430,17 @@ switch (mode) {
             set sample, file("${sample}_reads.krak") into kraken_reads_report
             set sample, file("${sample}_classified_*.fastq") into kraken_classified_reads
             set sample, file("${sample}_unclassified_*.fastq") into kraken_unclassified_reads
+            set sample, file("${sample}_reads.krakreport") into kraken_reads_sample_report
 
             """	
-            kraken2 --db ${db} \
-                --paired ${reads.findAll().join(' ')} \
-                --threads ${task.cpus} \
-                --classified-out ${sample}_classified#.fastq \
-                --unclassified-out ${sample}_unclassified#.fastq \
-                --output ${sample}_reads.krak
+            kraken2 --db ${db} \\
+                --paired ${reads.findAll().join(' ')} \\
+                --threads ${task.cpus} \\
+                --classified-out ${sample}_classified#.fastq \\
+                --unclassified-out ${sample}_unclassified#.fastq \\
+                --output ${sample}_reads.krak \\
+                --report ${sample}_reads.krakreport \\
+                --report-zero-counts
             """ 
         }
 
